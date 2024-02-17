@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("books")
@@ -35,5 +36,29 @@ public class BookController {
         BookResponse bookResponse = new BookResponse();
         bookResponse.set(book);
         return ResponseEntity.ok(bookResponse);
+    }
+    @PostMapping
+    public ResponseEntity<Book> create(@RequestBody Book movie) {
+        Book savedMovie = bookRepository.save(movie);
+        return new ResponseEntity<>(savedMovie, HttpStatus.CREATED);
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Book> delete(@PathVariable int id) {
+        Book movie = bookRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found"));
+        bookRepository.delete(movie);
+        return ResponseEntity.ok(movie);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Book> update(@PathVariable int id, @RequestBody Book movieDetails) {
+        Book movie = bookRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found"));
+        movie.setTitle(movieDetails.getTitle());
+        movie.setYear(movieDetails.getYear());
+        movie.setGenre(movieDetails.getGenre());
+        movie.setPublisher(movieDetails.getPublisher());
+        Book updatedMovie = bookRepository.save(movie);
+        return ResponseEntity.ok(updatedMovie);
     }
 }
